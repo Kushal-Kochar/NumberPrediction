@@ -13,13 +13,6 @@
             <button id="logoutBtn" class="logout-button-small">Logout</button>
         </div>
         
-        <div class="data-status-section">
-            <p id="dataStatus" class="data-status">
-                <span id="dataStatusIcon">📊</span>
-                <span id="dataStatusText">Loading data...</span>
-            </p>
-        </div>
-
         <div class="input-section">
             <label for="numberInput">Enter 3-Digit Number (000-999):</label>
             <div class="input-wrapper">
@@ -61,7 +54,7 @@
                 document.getElementById('mainApp').style.display = 'block';
                 document.getElementById('authRequired').style.display = 'none';
                 
-                // Load Excel data from storage
+                // Load Excel data from storage (silently)
                 loadExcelDataFromStorage();
                 
                 // Handle logout
@@ -79,17 +72,8 @@
         
         function loadExcelDataFromStorage() {
             const data = getExcelData();
-            const timestamp = getExcelDataTimestamp();
-            const statusDiv = document.getElementById('dataStatus');
-            const statusText = document.getElementById('dataStatusText');
-            const statusIcon = document.getElementById('dataStatusIcon');
             
             if (data && data.length > 0) {
-                statusText.textContent = `Data loaded (${data.length} rows) - Last updated: ${timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'}`;
-                statusIcon.textContent = '✅';
-                statusDiv.classList.add('success');
-                statusDiv.classList.remove('error');
-                
                 // Set Excel data in script.js
                 setTimeout(() => {
                     if (typeof window.setExcelData === 'function') {
@@ -97,12 +81,7 @@
                     }
                 }, 100);
             } else {
-                statusText.textContent = 'No data available. Please ask admin to upload Excel file.';
-                statusIcon.textContent = '⚠️';
-                statusDiv.classList.add('error');
-                statusDiv.classList.remove('success');
-                
-                // Disable search button
+                // Disable search button if no data
                 const searchBtn = document.getElementById('searchBtn');
                 if (searchBtn) {
                     searchBtn.disabled = true;

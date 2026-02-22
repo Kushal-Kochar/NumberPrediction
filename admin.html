@@ -47,8 +47,6 @@
                     </div>
                     
                     <div class="excel-data-info" id="excelDataInfo" style="display: none;">
-                        <h3>Current Data Status</h3>
-                        <p id="currentDataInfo"></p>
                         <button id="clearDataBtn" class="clear-data-btn">Clear Data</button>
                     </div>
                 </div>
@@ -133,13 +131,10 @@
         
         function loadExcelDataInfo() {
             const data = getExcelData();
-            const timestamp = getExcelDataTimestamp();
             const infoDiv = document.getElementById('excelDataInfo');
-            const infoText = document.getElementById('currentDataInfo');
             
             if (data && data.length > 0) {
                 infoDiv.style.display = 'block';
-                infoText.textContent = `Data loaded: ${data.length} rows. Last updated: ${timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'}`;
             } else {
                 infoDiv.style.display = 'none';
             }
@@ -182,7 +177,7 @@
                         // Update UI
                         statusDiv.textContent = `File loaded: ${file.name} (${excelData.length} rows)`;
                         statusDiv.classList.add('success');
-                        successDiv.textContent = `Excel data uploaded successfully! ${excelData.length} rows loaded. All users can now search this data.`;
+                        successDiv.textContent = `Excel data uploaded successfully! All users can now search this data.`;
                         successDiv.classList.add('show');
                         
                         // Reload data info
