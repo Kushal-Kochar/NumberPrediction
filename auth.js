@@ -232,6 +232,25 @@ function adminLogout() {
     localStorage.removeItem('adminSession');
 }
 
+// Excel Data Management Functions
+function saveExcelData(data) {
+    localStorage.setItem('excelData', JSON.stringify(data));
+    localStorage.setItem('excelDataTimestamp', new Date().toISOString());
+}
+
+function getExcelData() {
+    const data = localStorage.getItem('excelData');
+    return data ? JSON.parse(data) : null;
+}
+
+function getExcelDataTimestamp() {
+    return localStorage.getItem('excelDataTimestamp');
+}
+
+function hasExcelData() {
+    return localStorage.getItem('excelData') !== null;
+}
+
 // Initialize on load
 initializeAdmin();
 initializeUsers();

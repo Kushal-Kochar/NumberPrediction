@@ -1,76 +1,108 @@
 let excelData = null;
-let fileInput = document.getElementById('excelFile');
 let numberInput = document.getElementById('numberInput');
 let searchBtn = document.getElementById('searchBtn');
-let fileStatus = document.getElementById('fileStatus');
 let errorDiv = document.getElementById('error');
 
-// Handle file upload
-fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+// Function to set Excel data (called from index.html)
+window.setExcelData = function(data) {
+    excelData = data;
+    if (searchBtn) {
+        searchBtn.disabled = false;
+    }
+    console.log('Excel data set:', data ? data.length + ' rows' : 'null');
+};
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            
-            // Get the first sheet
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // Convert to JSON
-            excelData = XLSX.utils.sheet_to_json(worksheet);
-            
-            fileStatus.textContent = `File loaded: ${file.name} (${excelData.length} rows)`;
-            fileStatus.classList.add('success');
-            searchBtn.disabled = false;
-            errorDiv.classList.remove('show');
-            
-            console.log('Excel data loaded:', excelData);
-            if (excelData.length > 0) {
-                console.log('Sample row:', excelData[0]);
-                console.log('Column names:', Object.keys(excelData[0]));
-            }
-        } catch (error) {
-            showError('Error reading Excel file: ' + error.message);
-            fileStatus.textContent = 'Error loading file';
-            fileStatus.classList.remove('success');
-            searchBtn.disabled = true;
-        }
-    };
+// Validate 3-digit number
+function validateThreeDigitNumber(input) {
+    // Remove any non-digit characters
+    const cleaned = input.replace(/\D/g, '');
     
-    reader.readAsArrayBuffer(file);
-});
+    // Check if exactly 3 digits
+    if (cleaned.length === 0) {
+        return { valid: false, value: null, message: 'Please enter a number' };
+    }
+    
+    if (cleaned.length < 3) {
+        return { valid: false, value: null, message: 'Number must be exactly 3 digits (e.g., 001, 042)' };
+    }
+    
+    if (cleaned.length > 3) {
+        return { valid: false, value: null, message: 'Number must be exactly 3 digits (000-999)' };
+    }
+    
+    const num = parseInt(cleaned, 10);
+    if (isNaN(num) || num < 0 || num > 999) {
+        return { valid: false, value: null, message: 'Number must be between 000 and 999' };
+    }
+    
+    return { valid: true, value: num, formatted: cleaned.padStart(3, '0') };
+}
+
+// Handle input validation
+if (numberInput) {
+    numberInput.addEventListener('input', function(e) {
+        // Only allow digits
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Limit to 3 digits
+        if (this.value.length > 3) {
+            this.value = this.value.substring(0, 3);
+        }
+        
+        // Format with leading zeros if needed
+        if (this.value.length > 0 && this.value.length < 3) {
+            // Don't auto-format while typing, let user type
+        }
+    });
+    
+    numberInput.addEventListener('blur', function(e) {
+        // Format with leading zeros when user leaves the field
+        if (this.value.length > 0 && this.value.length <= 3) {
+            this.value = this.value.padStart(3, '0');
+        }
+    });
+}
 
 // Handle search
-searchBtn.addEventListener('click', searchNumber);
-numberInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        searchNumber();
-    }
-});
+if (searchBtn) {
+    searchBtn.addEventListener('click', searchNumber);
+}
+
+if (numberInput) {
+    numberInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchNumber();
+        }
+    });
+}
 
 function searchNumber() {
-    const inputNumber = numberInput.value.trim();
+    if (!numberInput) return;
     
-    if (!inputNumber) {
-        showError('Please enter a number');
+    const inputValue = numberInput.value.trim();
+    
+    // Validate 3-digit number
+    const validation = validateThreeDigitNumber(inputValue);
+    if (!validation.valid) {
+        showError(validation.message);
         return;
     }
     
+    const number = validation.value;
+    const numberStr = validation.formatted;
+    
+    // Update input to show formatted value
+    numberInput.value = numberStr;
+    
     if (!excelData || excelData.length === 0) {
-        showError('Please upload an Excel file first');
+        showError('No data available. Please contact admin to upload Excel file.');
         return;
     }
     
     // Clear previous error
-    errorDiv.classList.remove('show');
-    
-    // Search for the number in Excel data
-    const number = parseFloat(inputNumber);
-    const numberStr = inputNumber;
+    if (errorDiv) {
+        errorDiv.classList.remove('show');
+    }
     
     // Find all matching combinations
     const matchingCombinations = [];
