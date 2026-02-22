@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Number Lookup App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>Login</h1>
+            <p class="auth-subtitle">Sign in to access the Number Lookup Application</p>
+            
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" />
+                </div>
+                
+                <button type="submit" class="auth-button">Login</button>
+            </form>
+            
+            <div id="authError" class="error-message"></div>
+            
+            <p class="auth-link">
+                Don't have an account? <a href="signup.html">Sign up here</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="auth.js"></script>
+    <script>
+        // Initialize (async)
+        (async function() {
+            await initializeAdmin();
+            initializeUsers();
+        })();
+        
+        // Check if already logged in
+        if (isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+        
+        // Handle login form
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('authError');
+            
+            if (!username || !password) {
+                errorDiv.textContent = 'Please fill in all fields';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            const result = loginUser(username, password);
+            
+            if (result.success) {
+                window.location.href = 'index.html';
+            } else {
+                errorDiv.textContent = result.message;
+                errorDiv.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>
+

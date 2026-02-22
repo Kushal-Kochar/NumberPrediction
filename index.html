@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Lookup App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="mainApp" style="display: none;">
+        <div class="header-actions">
+            <h1 style="margin: 0; flex: 1;">Number Lookup Application</h1>
+            <button id="logoutBtn" class="logout-button-small">Logout</button>
+        </div>
+        
+        <div class="upload-section">
+            <label for="excelFile" class="upload-label">
+                <span>📁 Upload Excel File</span>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" />
+            </label>
+            <p id="fileStatus" class="file-status">No file uploaded</p>
+        </div>
+
+        <div class="input-section">
+            <label for="numberInput">Enter Number:</label>
+            <div class="input-wrapper">
+                <input type="number" id="numberInput" placeholder="Enter a number" />
+                <button id="searchBtn" disabled>Search</button>
+            </div>
+        </div>
+
+        <div id="results" class="results-section">
+            <!-- Results will be dynamically generated here -->
+        </div>
+
+        <div id="error" class="error-message"></div>
+    </div>
+    
+    <div id="authRequired" class="auth-required-message">
+        <div class="auth-message-card">
+            <h2>Authentication Required</h2>
+            <p>Please login to access the Number Lookup Application</p>
+            <div class="auth-buttons">
+                <a href="login.html" class="auth-button">Login</a>
+                <a href="signup.html" class="auth-button-secondary">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Initialize and check authentication on page load
+        (async function() {
+            await initializeAdmin();
+            initializeUsers();
+            
+            // Check authentication
+            if (isLoggedIn()) {
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('authRequired').style.display = 'none';
+            
+            // Handle logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to logout?')) {
+                    logout();
+                    window.location.href = 'login.html';
+                }
+            });
+            } else {
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('authRequired').style.display = 'flex';
+            }
+        })();
+    </script>
+</body>
+</html>
+

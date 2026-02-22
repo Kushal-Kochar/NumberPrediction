@@ -1,0 +1,19 @@
+# Excel files (don't upload sample data)
+*.xlsx
+*.xls
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+

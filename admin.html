@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Number Lookup App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" id="loginCard">
+            <h1>Admin Login</h1>
+            <form id="adminLoginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="adminUsername">Admin Username:</label>
+                    <input type="text" id="adminUsername" name="adminUsername" required />
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password:</label>
+                    <input type="password" id="adminPassword" name="adminPassword" required />
+                </div>
+                
+                <button type="submit" class="auth-button">Login as Admin</button>
+            </form>
+            
+            <div id="adminError" class="error-message"></div>
+        </div>
+        
+        <div class="admin-panel" id="adminPanel" style="display: none;">
+            <div class="admin-header">
+                <h1>Admin Panel</h1>
+                <button id="logoutBtn" class="logout-button">Logout</button>
+            </div>
+            
+            <div class="admin-content">
+                <h2>Pending Signup Requests</h2>
+                <div id="pendingUsers" class="users-list">
+                    <!-- Pending users will be displayed here -->
+                </div>
+                
+                <h2 style="margin-top: 30px;">All Users</h2>
+                <div id="allUsers" class="users-list">
+                    <!-- All users will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="auth.js"></script>
+    <script>
+        // Initialize (async)
+        (async function() {
+            await initializeAdmin();
+            initializeUsers();
+        })();
+        
+        // Check if admin is already logged in
+        if (isAdminLoggedIn()) {
+            showAdminPanel();
+        }
+        
+        // Handle admin login
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('adminError');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // Disable button during login
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            
+            try {
+                const result = await adminLoginAsync(username, password);
+                
+                if (result.success) {
+                    showAdminPanel();
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.classList.add('show');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Login error. Please try again.';
+                errorDiv.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login as Admin';
+            }
+        });
+        
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            adminLogout();
+            document.getElementById('loginCard').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminLoginForm').reset();
+        });
+        
+        function showAdminPanel() {
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadUsers();
+        }
+        
+        function loadUsers() {
+            const users = getUsers();
+            const pendingUsers = getPendingUsers();
+            
+            // Display pending users
+            const pendingDiv = document.getElementById('pendingUsers');
+            if (pendingUsers.length === 0) {
+                pendingDiv.innerHTML = '<p class="no-users">No pending signup requests</p>';
+            } else {
+                pendingDiv.innerHTML = pendingUsers.map(user => `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <strong>${user.username}</strong>
+                            ${user.email ? `<span class="user-email">${user.email}</span>` : ''}
+                            <span class="user-date">Requested: ${new Date(user.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="user-actions">
+                            <button class="approve-btn" onclick="approveUserAction('${user.id}')">Approve</button>
+                            <button class="reject-btn" onclick="rejectUserAction('${user.id}')">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Display all users
+            const allUsersDiv = document.getElementById('allUsers');
+            if (users.length === 0) {
+                allUsersDiv.innerHTML = '<p class="no-users">No users registered</p>';
+            } else {
+                allUsersDiv.innerHTML = users.map(user => `
+                    <div class="user-card ${user.status}">
+                        <div class="user-info">
+                            <strong>${user.username}</strong>
+                            ${user.email ? `<span class="user-email">${user.email}</span>` : ''}
+                            <span class="user-status status-${user.status}">${user.status.toUpperCase()}</span>
+                            <span class="user-date">Created: ${new Date(user.createdAt).toLocaleDateString()}</span>
+                            ${user.approvedAt ? `<span class="user-date">Approved: ${new Date(user.approvedAt).toLocaleDateString()}</span>` : ''}
+                        </div>
+                        ${user.status === 'pending' ? `
+                            <div class="user-actions">
+                                <button class="approve-btn" onclick="approveUserAction('${user.id}')">Approve</button>
+                                <button class="reject-btn" onclick="rejectUserAction('${user.id}')">Reject</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function approveUserAction(userId) {
+            const result = approveUser(userId);
+            if (result.success) {
+                loadUsers();
+                alert('User approved successfully!');
+            } else {
+                alert(result.message);
+            }
+        }
+        
+        function rejectUserAction(userId) {
+            if (confirm('Are you sure you want to reject this user?')) {
+                const result = rejectUser(userId);
+                if (result.success) {
+                    loadUsers();
+                    alert('User rejected');
+                } else {
+                    alert(result.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

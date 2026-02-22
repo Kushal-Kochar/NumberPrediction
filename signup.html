@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Number Lookup App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>Sign Up</h1>
+            <p class="auth-subtitle">Create an account. Your request will be sent to admin for approval.</p>
+            
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email (Optional):</label>
+                    <input type="email" id="email" name="email" autocomplete="email" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password" minlength="6" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password" />
+                </div>
+                
+                <button type="submit" class="auth-button">Sign Up</button>
+            </form>
+            
+            <div id="authError" class="error-message"></div>
+            <div id="authSuccess" class="success-message"></div>
+            
+            <p class="auth-link">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="auth.js"></script>
+    <script>
+        // Initialize (async)
+        (async function() {
+            await initializeAdmin();
+            initializeUsers();
+        })();
+        
+        // Handle signup form
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('authError');
+            const successDiv = document.getElementById('authSuccess');
+            
+            // Clear previous messages
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+            
+            // Validation
+            if (!username || !password) {
+                errorDiv.textContent = 'Please fill in all required fields';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            const result = signupUser(username, password, email);
+            
+            if (result.success) {
+                successDiv.textContent = result.message;
+                successDiv.classList.add('show');
+                
+                // Clear form
+                document.getElementById('signupForm').reset();
+                
+                // Redirect to login after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else {
+                errorDiv.textContent = result.message;
+                errorDiv.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>
+
