@@ -68,6 +68,16 @@
         </div>
     </div>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration (update with your credentials) -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Firebase Database Operations -->
+    <script src="firebase-db.js"></script>
+    
     <script src="auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
@@ -129,8 +139,8 @@
             setupExcelUpload();
         }
         
-        function loadExcelDataInfo() {
-            const data = getExcelData();
+        async function loadExcelDataInfo() {
+            const data = await getExcelData();
             const infoDiv = document.getElementById('excelDataInfo');
             
             if (data && data.length > 0) {
@@ -155,7 +165,7 @@
                 successDiv.classList.remove('show');
                 
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
@@ -171,8 +181,8 @@
                             throw new Error('Excel file is empty');
                         }
                         
-                        // Save to storage
-                        saveExcelData(excelData);
+                        // Save to storage (async)
+                        await saveExcelData(excelData);
                         
                         // Update UI
                         statusDiv.textContent = `File loaded: ${file.name} (${excelData.length} rows)`;
@@ -181,7 +191,7 @@
                         successDiv.classList.add('show');
                         
                         // Reload data info
-                        loadExcelDataInfo();
+                        await loadExcelDataInfo();
                         
                         // Clear file input
                         fileInput.value = '';
@@ -199,11 +209,10 @@
             });
             
             // Clear data button
-            document.getElementById('clearDataBtn').addEventListener('click', function() {
+            document.getElementById('clearDataBtn').addEventListener('click', async function() {
                 if (confirm('Are you sure you want to clear all Excel data? Users will not be able to search until you upload a new file.')) {
-                    localStorage.removeItem('excelData');
-                    localStorage.removeItem('excelDataTimestamp');
-                    loadExcelDataInfo();
+                    await clearExcelData();
+                    await loadExcelDataInfo();
                     statusDiv.textContent = 'No file uploaded';
                     statusDiv.classList.remove('success');
                     successDiv.classList.remove('show');
@@ -213,9 +222,9 @@
             });
         }
         
-        function loadUsers() {
-            const users = getUsers();
-            const pendingUsers = getPendingUsers();
+        async function loadUsers() {
+            const users = await getUsers();
+            const pendingUsers = users.filter(u => u.status === 'pending');
             
             // Display pending users
             const pendingDiv = document.getElementById('pendingUsers');
@@ -262,21 +271,21 @@
             }
         }
         
-        function approveUserAction(userId) {
-            const result = approveUser(userId);
+        async function approveUserAction(userId) {
+            const result = await approveUser(userId);
             if (result.success) {
-                loadUsers();
+                await loadUsers();
                 alert('User approved successfully!');
             } else {
                 alert(result.message);
             }
         }
         
-        function rejectUserAction(userId) {
+        async function rejectUserAction(userId) {
             if (confirm('Are you sure you want to reject this user?')) {
-                const result = rejectUser(userId);
+                const result = await rejectUser(userId);
                 if (result.success) {
-                    loadUsers();
+                    await loadUsers();
                     alert('User rejected');
                 } else {
                     alert(result.message);

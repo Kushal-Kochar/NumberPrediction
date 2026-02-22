@@ -34,6 +34,16 @@
         </div>
     </div>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration (update with your credentials) -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Firebase Database Operations -->
+    <script src="firebase-db.js"></script>
+    
     <script src="auth.js"></script>
     <script>
         // Initialize (async)
@@ -48,12 +58,13 @@
         }
         
         // Handle login form
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('authError');
+            const submitBtn = this.querySelector('button[type="submit"]');
             
             if (!username || !password) {
                 errorDiv.textContent = 'Please fill in all fields';
@@ -61,13 +72,25 @@
                 return;
             }
             
-            const result = loginUser(username, password);
+            // Disable button during login
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
             
-            if (result.success) {
-                window.location.href = 'index.html';
-            } else {
-                errorDiv.textContent = result.message;
+            try {
+                const result = await loginUser(username, password);
+                
+                if (result.success) {
+                    window.location.href = 'index.html';
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.classList.add('show');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Login error. Please try again.';
                 errorDiv.classList.add('show');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
             }
         });
     </script>

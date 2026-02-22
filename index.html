@@ -40,6 +40,16 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration (update with your credentials) -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Firebase Database Operations -->
+    <script src="firebase-db.js"></script>
+    
     <script src="auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
@@ -70,8 +80,8 @@
             }
         })();
         
-        function loadExcelDataFromStorage() {
-            const data = getExcelData();
+        async function loadExcelDataFromStorage() {
+            const data = await getExcelData();
             
             if (data && data.length > 0) {
                 // Set Excel data in script.js
