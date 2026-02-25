@@ -40,16 +40,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Firebase Configuration (update with your credentials) -->
-    <script src="firebase-config.js"></script>
-    
-    <!-- Firebase Database Operations -->
-    <script src="firebase-db.js"></script>
-    
     <script src="auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
@@ -80,18 +70,16 @@
             }
         })();
         
-        async function loadExcelDataFromStorage() {
-            const data = await getExcelData();
+        function loadExcelDataFromStorage() {
+            const data = getExcelData();
             
             if (data && data.length > 0) {
-                // Set Excel data in script.js
                 setTimeout(() => {
                     if (typeof window.setExcelData === 'function') {
                         window.setExcelData(data);
                     }
                 }, 100);
             } else {
-                // Disable search button if no data
                 const searchBtn = document.getElementById('searchBtn');
                 if (searchBtn) {
                     searchBtn.disabled = true;

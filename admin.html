@@ -68,16 +68,6 @@
         </div>
     </div>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Firebase Configuration (update with your credentials) -->
-    <script src="firebase-config.js"></script>
-    
-    <!-- Firebase Database Operations -->
-    <script src="firebase-db.js"></script>
-    
     <script src="auth.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
@@ -139,8 +129,8 @@
             setupExcelUpload();
         }
         
-        async function loadExcelDataInfo() {
-            const data = await getExcelData();
+        function loadExcelDataInfo() {
+            const data = getExcelData();
             const infoDiv = document.getElementById('excelDataInfo');
             
             if (data && data.length > 0) {
@@ -165,38 +155,28 @@
                 successDiv.classList.remove('show');
                 
                 const reader = new FileReader();
-                reader.onload = async function(e) {
+                reader.onload = function(e) {
                     try {
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
                         
-                        // Get the first sheet
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
-                        
-                        // Convert to JSON
                         const excelData = XLSX.utils.sheet_to_json(worksheet);
                         
                         if (excelData.length === 0) {
                             throw new Error('Excel file is empty');
                         }
                         
-                        // Save to storage (async)
-                        await saveExcelData(excelData);
+                        saveExcelData(excelData);
                         
-                        // Update UI
                         statusDiv.textContent = `File loaded: ${file.name} (${excelData.length} rows)`;
                         statusDiv.classList.add('success');
                         successDiv.textContent = `Excel data uploaded successfully! All users can now search this data.`;
                         successDiv.classList.add('show');
                         
-                        // Reload data info
-                        await loadExcelDataInfo();
-                        
-                        // Clear file input
+                        loadExcelDataInfo();
                         fileInput.value = '';
-                        
-                        console.log('Excel data loaded:', excelData);
                     } catch (error) {
                         errorDiv.textContent = 'Error reading Excel file: ' + error.message;
                         errorDiv.classList.add('show');
@@ -209,10 +189,10 @@
             });
             
             // Clear data button
-            document.getElementById('clearDataBtn').addEventListener('click', async function() {
+            document.getElementById('clearDataBtn').addEventListener('click', function() {
                 if (confirm('Are you sure you want to clear all Excel data? Users will not be able to search until you upload a new file.')) {
-                    await clearExcelData();
-                    await loadExcelDataInfo();
+                    clearExcelData();
+                    loadExcelDataInfo();
                     statusDiv.textContent = 'No file uploaded';
                     statusDiv.classList.remove('success');
                     successDiv.classList.remove('show');
@@ -222,8 +202,8 @@
             });
         }
         
-        async function loadUsers() {
-            const users = await getUsers();
+        function loadUsers() {
+            const users = getUsers();
             const pendingUsers = users.filter(u => u.status === 'pending');
             
             // Display pending users
@@ -271,21 +251,21 @@
             }
         }
         
-        async function approveUserAction(userId) {
-            const result = await approveUser(userId);
+        function approveUserAction(userId) {
+            const result = approveUser(userId);
             if (result.success) {
-                await loadUsers();
+                loadUsers();
                 alert('User approved successfully!');
             } else {
                 alert(result.message);
             }
         }
         
-        async function rejectUserAction(userId) {
+        function rejectUserAction(userId) {
             if (confirm('Are you sure you want to reject this user?')) {
-                const result = await rejectUser(userId);
+                const result = rejectUser(userId);
                 if (result.success) {
-                    await loadUsers();
+                    loadUsers();
                     alert('User rejected');
                 } else {
                     alert(result.message);

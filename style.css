@@ -237,6 +237,7 @@ h1 {
     transition: all 0.3s ease;
 }
 
+/* Yellow: value repeats 2 times */
 .result-value.highlight-match {
     background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
     color: #333;
@@ -244,15 +245,35 @@ h1 {
     box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
     transform: scale(1.05);
     border: 2px solid #ffc107;
-    animation: highlightPulse 2s ease-in-out infinite;
+    animation: highlightPulseYellow 2s ease-in-out infinite;
 }
 
-@keyframes highlightPulse {
+@keyframes highlightPulseYellow {
     0%, 100% {
         box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
     }
     50% {
         box-shadow: 0 6px 18px rgba(255, 215, 0, 0.6);
+    }
+}
+
+/* Orange: value repeats 3 or more times */
+.result-value.highlight-match-3 {
+    background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.5);
+    transform: scale(1.05);
+    border: 2px solid #e65100;
+    animation: highlightPulseOrange 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulseOrange {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.5);
+    }
+    50% {
+        box-shadow: 0 6px 18px rgba(255, 140, 0, 0.7);
     }
 }
 

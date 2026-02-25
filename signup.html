@@ -45,16 +45,6 @@
         </div>
     </div>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Firebase Configuration (update with your credentials) -->
-    <script src="firebase-config.js"></script>
-    
-    <!-- Firebase Database Operations -->
-    <script src="firebase-db.js"></script>
-    
     <script src="auth.js"></script>
     <script>
         // Initialize (async)
@@ -64,7 +54,7 @@
         })();
         
         // Handle signup form
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
@@ -74,11 +64,9 @@
             const errorDiv = document.getElementById('authError');
             const successDiv = document.getElementById('authSuccess');
             
-            // Clear previous messages
             errorDiv.classList.remove('show');
             successDiv.classList.remove('show');
             
-            // Validation
             if (!username || !password) {
                 errorDiv.textContent = 'Please fill in all required fields';
                 errorDiv.classList.add('show');
@@ -97,7 +85,7 @@
                 return;
             }
             
-            const result = await signupUser(username, password, email);
+            const result = signupUser(username, password, email);
             
             if (result.success) {
                 successDiv.textContent = result.message;

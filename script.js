@@ -162,16 +162,25 @@ function displayAllResults(matchingCombinations) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = ''; // Clear previous results
     
-    // Find matching values across all combinations
-    const matchingValues = findMatchingValues(matchingCombinations);
+    // Find matching values and their counts (for highlight: 2 = yellow, 3+ = orange)
+    const valueCounts = findMatchingValues(matchingCombinations);
+    
+    function getHighlightClass(count) {
+        if (!count || count < 2) return '';
+        if (count === 2) return 'highlight-match';      // yellow
+        return 'highlight-match-3';                      // orange (3 or more)
+    }
     
     matchingCombinations.forEach((combination, index) => {
         const combinationNumber = index + 1;
         
-        // Check which values match with other combinations
-        const bigSmallMatches = matchingValues.bigSmall.has(combination.bigSmall);
-        const colourMatches = matchingValues.colour.has(combination.colour);
-        const numberMatches = matchingValues.number.has(String(combination.number));
+        const bigSmallCount = valueCounts.bigSmall.get(String(combination.bigSmall).trim()) || 0;
+        const colourCount = valueCounts.colour.get(String(combination.colour).trim()) || 0;
+        const numberCount = valueCounts.number.get(String(combination.number).trim()) || 0;
+        
+        const bigSmallClass = getHighlightClass(bigSmallCount);
+        const colourClass = getHighlightClass(colourCount);
+        const numberClass = getHighlightClass(numberCount);
         
         // Create result card
         const card = document.createElement('div');
@@ -181,15 +190,15 @@ function displayAllResults(matchingCombinations) {
             <div class="combination-title">Combination ${combinationNumber}</div>
             <div class="result-item">
                 <span class="result-label">Big/Small:</span>
-                <span class="result-value ${bigSmallMatches ? 'highlight-match' : ''}">${combination.bigSmall}</span>
+                <span class="result-value ${bigSmallClass}">${combination.bigSmall}</span>
             </div>
             <div class="result-item">
                 <span class="result-label">Colour:</span>
-                <span class="result-value ${colourMatches ? 'highlight-match' : ''}">${combination.colour}</span>
+                <span class="result-value ${colourClass}">${combination.colour}</span>
             </div>
             <div class="result-item">
                 <span class="result-label">Number:</span>
-                <span class="result-value ${numberMatches ? 'highlight-match' : ''}">${combination.number}</span>
+                <span class="result-value ${numberClass}">${combination.number}</span>
             </div>
         `;
         
@@ -198,58 +207,32 @@ function displayAllResults(matchingCombinations) {
 }
 
 function findMatchingValues(combinations) {
-    // Count occurrences of each value
+    // Count occurrences of each value (used for highlight: 2 = yellow, 3+ = orange)
     const bigSmallCount = new Map();
     const colourCount = new Map();
     const numberCount = new Map();
     
     combinations.forEach(combo => {
-        // Count Big/Small
         const bigSmall = String(combo.bigSmall).trim();
         if (bigSmall !== '-') {
             bigSmallCount.set(bigSmall, (bigSmallCount.get(bigSmall) || 0) + 1);
         }
         
-        // Count Colour
         const colour = String(combo.colour).trim();
         if (colour !== '-') {
             colourCount.set(colour, (colourCount.get(colour) || 0) + 1);
         }
         
-        // Count Number
         const number = String(combo.number).trim();
         if (number !== '-') {
             numberCount.set(number, (numberCount.get(number) || 0) + 1);
         }
     });
     
-    // Find values that appear more than once (matching values)
-    const matchingBigSmall = new Set();
-    const matchingColour = new Set();
-    const matchingNumber = new Set();
-    
-    bigSmallCount.forEach((count, value) => {
-        if (count > 1) {
-            matchingBigSmall.add(value);
-        }
-    });
-    
-    colourCount.forEach((count, value) => {
-        if (count > 1) {
-            matchingColour.add(value);
-        }
-    });
-    
-    numberCount.forEach((count, value) => {
-        if (count > 1) {
-            matchingNumber.add(value);
-        }
-    });
-    
     return {
-        bigSmall: matchingBigSmall,
-        colour: matchingColour,
-        number: matchingNumber
+        bigSmall: bigSmallCount,
+        colour: colourCount,
+        number: numberCount
     };
 }
 

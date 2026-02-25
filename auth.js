@@ -57,30 +57,13 @@ function initializeUsers() {
     }
 }
 
-// Get all users (with Firebase support)
-async function getUsers() {
-    // Try Firebase first, fallback to localStorage
-    if (typeof getUsersFromFirebase === 'function') {
-        try {
-            return await getUsersFromFirebase();
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+// Get all users
+function getUsers() {
     return JSON.parse(localStorage.getItem('users') || '[]');
 }
 
-// Save users (with Firebase support)
-async function saveUsers(users) {
-    // Try Firebase first, fallback to localStorage
-    if (typeof saveUsersToFirebase === 'function') {
-        try {
-            await saveUsersToFirebase(users);
-            return;
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+// Save users
+function saveUsers(users) {
     localStorage.setItem('users', JSON.stringify(users));
 }
 
@@ -116,9 +99,9 @@ function getCurrentUser() {
     return users.find(u => u.id === sessionData.userId);
 }
 
-// Login user (async for Firebase)
-async function loginUser(username, password) {
-    const users = await getUsers();
+// Login user
+function loginUser(username, password) {
+    const users = getUsers();
     const user = users.find(u => u.username === username && u.password === password);
     
     if (!user) {
@@ -141,9 +124,9 @@ async function loginUser(username, password) {
     return { success: false, message: 'Account not approved' };
 }
 
-// Signup new user (async for Firebase)
-async function signupUser(username, password, email) {
-    const users = await getUsers();
+// Signup new user
+function signupUser(username, password, email) {
+    const users = getUsers();
     
     // Check if username already exists
     if (users.find(u => u.username === username)) {
@@ -167,16 +150,7 @@ async function signupUser(username, password, email) {
     };
     
     users.push(newUser);
-    await saveUsers(users);
-    
-    // Also add to Firebase directly
-    if (typeof addUserToFirebase === 'function') {
-        try {
-            await addUserToFirebase(newUser);
-        } catch (error) {
-            console.log('Firebase add user failed, but saved to localStorage');
-        }
-    }
+    saveUsers(users);
     
     return { success: true, message: 'Signup request submitted. Waiting for admin approval.' };
 }
@@ -211,18 +185,15 @@ function isAdminLoggedIn() {
     return localStorage.getItem('adminSession') !== null;
 }
 
-// Get pending users (accepts users array as parameter)
-function getPendingUsers(users) {
-    if (!users) {
-        // If no users provided, try to get them (but this is async now)
-        return [];
-    }
+// Get pending users
+function getPendingUsers() {
+    const users = getUsers();
     return users.filter(u => u.status === 'pending');
 }
 
-// Approve user (async for Firebase)
-async function approveUser(userId) {
-    const users = await getUsers();
+// Approve user
+function approveUser(userId) {
+    const users = getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
     
     if (userIndex === -1) {
@@ -231,26 +202,14 @@ async function approveUser(userId) {
     
     users[userIndex].status = 'approved';
     users[userIndex].approvedAt = new Date().toISOString();
-    await saveUsers(users);
-    
-    // Also update Firebase directly
-    if (typeof updateUserInFirebase === 'function') {
-        try {
-            await updateUserInFirebase(userId, {
-                status: 'approved',
-                approvedAt: new Date().toISOString()
-            });
-        } catch (error) {
-            console.log('Firebase update failed, but saved to localStorage');
-        }
-    }
+    saveUsers(users);
     
     return { success: true, message: 'User approved successfully' };
 }
 
-// Reject user (async for Firebase)
-async function rejectUser(userId) {
-    const users = await getUsers();
+// Reject user
+function rejectUser(userId) {
+    const users = getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
     
     if (userIndex === -1) {
@@ -258,16 +217,7 @@ async function rejectUser(userId) {
     }
     
     users[userIndex].status = 'rejected';
-    await saveUsers(users);
-    
-    // Also update Firebase directly
-    if (typeof updateUserInFirebase === 'function') {
-        try {
-            await updateUserInFirebase(userId, { status: 'rejected' });
-        } catch (error) {
-            console.log('Firebase update failed, but saved to localStorage');
-        }
-    }
+    saveUsers(users);
     
     return { success: true, message: 'User rejected' };
 }
@@ -282,63 +232,26 @@ function adminLogout() {
     localStorage.removeItem('adminSession');
 }
 
-// Excel Data Management Functions (with Firebase support)
-async function saveExcelData(data) {
-    // Try Firebase first, fallback to localStorage
-    if (typeof saveExcelDataToFirebase === 'function') {
-        try {
-            await saveExcelDataToFirebase(data);
-            return;
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+// Excel Data Management Functions
+function saveExcelData(data) {
     localStorage.setItem('excelData', JSON.stringify(data));
     localStorage.setItem('excelDataTimestamp', new Date().toISOString());
 }
 
-async function getExcelData() {
-    // Try Firebase first, fallback to localStorage
-    if (typeof getExcelDataFromFirebase === 'function') {
-        try {
-            const result = await getExcelDataFromFirebase();
-            return result.data;
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+function getExcelData() {
     const data = localStorage.getItem('excelData');
     return data ? JSON.parse(data) : null;
 }
 
-async function getExcelDataTimestamp() {
-    // Try Firebase first, fallback to localStorage
-    if (typeof getExcelDataFromFirebase === 'function') {
-        try {
-            const result = await getExcelDataFromFirebase();
-            return result.timestamp;
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+function getExcelDataTimestamp() {
     return localStorage.getItem('excelDataTimestamp');
 }
 
-async function hasExcelData() {
-    const data = await getExcelData();
-    return data !== null;
+function hasExcelData() {
+    return localStorage.getItem('excelData') !== null;
 }
 
-async function clearExcelData() {
-    // Try Firebase first, fallback to localStorage
-    if (typeof clearExcelDataFromFirebase === 'function') {
-        try {
-            await clearExcelDataFromFirebase();
-            return;
-        } catch (error) {
-            console.log('Firebase not available, using localStorage');
-        }
-    }
+function clearExcelData() {
     localStorage.removeItem('excelData');
     localStorage.removeItem('excelDataTimestamp');
 }
