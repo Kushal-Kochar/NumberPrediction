@@ -68,6 +68,22 @@ if (searchBtn) {
     searchBtn.addEventListener('click', searchNumber);
 }
 
+// Handle Clear button
+const clearBtn = document.getElementById('clearBtn');
+if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+        if (numberInput) {
+            numberInput.value = '';
+            numberInput.focus();
+        }
+        clearResults();
+        if (errorDiv) {
+            errorDiv.classList.remove('show');
+            errorDiv.textContent = '';
+        }
+    });
+}
+
 if (numberInput) {
     numberInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -151,9 +167,13 @@ function searchNumber() {
     }
     
     if (matchingCombinations.length === 0) {
-        showError(`Number ${inputNumber} not found in the Excel file`);
         clearResults();
+        showNoResultMessage(numberStr);
+        showError(`Number ${numberStr} not found in the Excel file`);
     } else {
+        if (errorDiv) {
+            errorDiv.classList.remove('show');
+        }
         displayAllResults(matchingCombinations);
     }
 }
@@ -373,7 +393,16 @@ function findSetForNumberColumn(row, keys, numberColumnIndex) {
 
 
 function clearResults() {
-    document.getElementById('results').innerHTML = '';
+    const resultsContainer = document.getElementById('results');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+    }
+}
+
+function showNoResultMessage(searchNumber) {
+    const resultsContainer = document.getElementById('results');
+    if (!resultsContainer) return;
+    resultsContainer.innerHTML = '<div class="no-result-message">No result found</div>';
 }
 
 function showError(message) {
